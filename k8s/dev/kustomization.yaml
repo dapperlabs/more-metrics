@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+commonLabels:
+  env: staging
+resources:
+  - deployment.yml
+  - service.yml
+  - ingress.yml
+
+images:
+  - name: europe-west1-docker.pkg.dev/playground-369107/ops/hack
+    newName: europe-west1-docker.pkg.dev/playground-369107/ops/hack

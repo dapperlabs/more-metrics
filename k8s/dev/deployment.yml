@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: more-metrics
+  name: more-metrics-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: more-metrics
+  strategy:
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/scrape: "true"
+      labels:
+        app: more-metrics
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: more-metrics
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 1
+      containers:
+        - image: europe-west1-docker.pkg.dev/playground-369107/ops/hack
+          imagePullPolicy: Always
+          name: more-metrics
+          ports:
+            - containerPort: 8081
+              name: web
+          resources:
+            limits:
+              cpu: 800m
+              memory: 1024Mi
+            requests:
+              cpu: 200m
+              memory: 512Mi
