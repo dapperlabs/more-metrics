@@ -10,7 +10,7 @@ env:
   GCP_PROJECT: playground-369107
   IMAGE_URL: europe-west1-docker.pkg.dev/playground-369107/ops/hack
   DOCKER_BUILDKIT: 1
-  GKE_CLUSTER: us-west1-application
+  GKE_CLUSTER: titans-cluster
   GKE_ZONE: europe-west1
   DEPLOYMENT_NAME: more-metrics-v1
   K8S_NAMESPACE: playground
