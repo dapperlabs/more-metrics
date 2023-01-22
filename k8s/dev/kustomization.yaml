@@ -6,7 +6,6 @@ commonLabels:
 resources:
   - deployment.yml
   - service.yml
-  - ingress.yml
 
 images:
   - name: europe-west1-docker.pkg.dev/playground-369107/ops/hack
