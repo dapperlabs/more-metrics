@@ -32,7 +32,7 @@ spec:
                 topologyKey: failure-domain.beta.kubernetes.io/zone
               weight: 1
       containers:
-        - image: europe-west1-docker.pkg.dev/playground-369107/ops/hack
+        - image: europe-west1-docker.pkg.dev/playground-369107/ops/hack:fef83c446771
           imagePullPolicy: Always
           name: more-metrics
           ports:
