@@ -1,4 +1,4 @@
-name: Build and Push
+name: Deploy to Dev Environment
 
 on:
   push:
@@ -10,6 +10,10 @@ env:
   GCP_PROJECT: playground-369107
   IMAGE_URL: europe-west1-docker.pkg.dev/playground-369107/ops/hack
   DOCKER_BUILDKIT: 1
+  GKE_CLUSTER: us-west1-application
+  GKE_ZONE: europe-west1
+  DEPLOYMENT_NAME: more-metrics-v1
+  K8S_NAMESPACE: playground
 
 jobs:
   setup-build-publish:
@@ -28,6 +32,13 @@ jobs:
       - name: 'Setup Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
+      # Get the GKE credentials for deployment to the cluster
+      - id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v1'
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+
       # Configure Docker to use the gcloud command-line tool as a credential helper for authentication
       - run: |-
           gcloud auth configure-docker europe-west1-docker.pkg.dev
@@ -43,3 +54,20 @@ jobs:
       - name: Publish
         run: |-
           docker push "$IMAGE_URL:$GITHUB_SHA"
+          
+
+      # Set up kustomize
+      - name: Set up Kustomize
+        run: |-
+          cd ./k8s/dev
+          curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
+          chmod u+x ./kustomize
+          
+      # Deploy the Docker image to the GKE cluster
+      - name: Deploy
+        run: |-
+          cd ./k8s/dev
+          ./kustomize edit set europe-west1-docker.pkg.dev/playground-369107/ops/hack:$GITHUB_SHA
+          ./kustomize build . | kubectl -n $K8S_NAMESPACE apply -f -
+          kubectl -n $K8S_NAMESPACE rollout status deployment/$DEPLOYMENT_NAME
+          kubectl -n $K8S_NAMESPACE get services -o wide
